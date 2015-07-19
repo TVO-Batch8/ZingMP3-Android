@@ -9,12 +9,12 @@
         android:layout_height="wrap_content" >
 
         <ImageView
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
             android:id="@+id/imageView1"
             android:layout_width="80dp"
-            android:scaleType="fitXY"
             android:layout_height="80dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginTop="5dp"
+            android:scaleType="fitXY"
             android:src="@drawable/ic_launcher" />
 
         <LinearLayout

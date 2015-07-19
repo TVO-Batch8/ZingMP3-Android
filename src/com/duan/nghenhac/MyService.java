@@ -33,15 +33,13 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
-import android.widget.ImageView;
 import android.widget.SeekBar;
-import android.widget.Toast;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.duan.Model.Song;
 import com.duan.broadcast.MusicIntentReceiver;
-import com.google.gson.annotations.Until;
 
 @SuppressLint("NewApi")
 public class MyService extends Service implements OnSeekBarChangeListener,
@@ -52,15 +50,17 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 	public static final String ACTION_NEXT = "duan.son.action.NEXT";
 	public static final String ACTION_PREVIOUS = "duan.son.action.PREVIOUS";
 	public static final String ACTION_TOGGLE_PLAYBACK = "duan.son.action.TOGGLE_PLAYBACK";
-	// public static final String ACTION_STOP = "action_stop";
-	//
+
+	public static final String NOTIFICATION_NEXT = "duan.son.action.next";
+	public static final String NOTIFICATION_PAUSE = "duan.son.action.pause";
+	public static final String NOTIFICATION_PREVIOUS = "duan.son.action.previous";
+	public static final String NOTIFICATION_DIMISS = "duan.son.action.dimissNotification";
+
 	private MediaPlayer mMediaPlayer = null;
 	// private MediaController mController;
 	// Xử lý việc cập nhật giao diện (thời gian và progress bar ...)
 	private Handler mHandler = new Handler();
 	private Utilities utils;
-	private int seekForwardTime = 5000; // 5 giây
-	private int seekBackwardTime = 5000; // 5 giây
 	public static int currentSongIndex = -1;
 	public static int songindexForPause = 0;
 	ArrayList<Song> mArray = new ArrayList<Song>();
@@ -69,72 +69,77 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 	private WeakReference<TextView> songCurrentDurationTime;
 	private WeakReference<TextView> songTotalDurationTime;
 	//
-	NotificationManager mNotificationManager;
-	Notification mNotification = null;
+	// private NotificationManager mNotificationManager;
+	private Notification mNotification = null;
 	int NOTIFICATION_ID = 1;
 	// TODO
-	ComponentName mMediaButtonReceiverComponent;
 	AudioManager mAudioManager;
-	RemoteControlClientCompat mRemoteControlClientCompat;
-	WifiLock mWifiLock;
-	Bitmap mDummyAlbumArt;
-	WifiManager wifiManager;
-	Bitmap mybitmap;
-
-	// AudioFocusHelper mAudioFocusHelper = null;
-	//
-	// enum AudioFocus {
-	// NoFocusNoDuck, // we don't have audio focus, and can't duck
-	// NoFocusCanDuck, // we don't have focus, but can play at a low volume
-	// // ("ducking")
-	// Focused // we have full audio focus
-	// }
-	//
-	// AudioFocus mAudioFocus = AudioFocus.NoFocusNoDuck;
+	private RemoteControlClient mRemoteControlClientCompat;
+	private ComponentName remoteComponentName;
+	private WifiLock mWifiLock;
+	private Bitmap mDummyAlbumArt;
+	private WifiManager wifiManager;
+	private Bitmap mybitmap;
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		try {
 			String action = intent.getAction();
 			initUI();
+			ConnectivityManager manager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+			// For 3G check
+			boolean is3g = manager.getNetworkInfo(
+					ConnectivityManager.TYPE_MOBILE).isConnectedOrConnecting();
+			// For WiFi Check
+			boolean isWifi = manager.getNetworkInfo(
+					ConnectivityManager.TYPE_WIFI).isConnectedOrConnecting();
+			wifiManager = (WifiManager) getApplicationContext()
+					.getSystemService(Context.WIFI_SERVICE);
+			if (!is3g && !isWifi) {
+				Toast.makeText(getApplicationContext(),
+						"Kiểm tra lại wifi hoặc 3G ", 0).show();
+			} else {
 
-			mArray = PlayActivity.mArraySong;
-			int index = PlayActivity.index;
-			Log.d("index", "" + index);
-			try {
-				index = (Integer) intent.getExtras().get("index");
+				mArray = PlayActivity.mArraySong;
+				int index = PlayActivity.index;
 				Log.d("index", "" + index);
-			} catch (Exception e) {
+				try {
+					index = (Integer) intent.getExtras().get("index");
+					Log.d("index", "" + index);
+				} catch (Exception e) {
 
+				}
+
+				if (action.equals(ACTION_PAUSE)) {
+					pauseMusic(index);
+				}
+				if (action.equals(ACTION_TOGGLE_PLAYBACK)) {
+					toggle(index);
+				}
+
+				if (action.equals(ACTION_PLAY)) {
+					mMediaPlayer.reset();
+					setUpAsForeground(mArray.get(index).getTitle());
+					playMusic(mArray.get(index).getLinkPlay320());
+					lockscreen(index);
+					updateProgressBar();
+					PlayActivity.index = index;
+
+				} else if (action.equals(ACTION_NEXT)) {
+					mMediaPlayer.reset();
+					if (index >= mArray.size() - 1)
+						index = -1;
+					playNextSong(mArray.get(index + 1).getLinkPlay320(), index);
+				} else if (action.equals(ACTION_PREVIOUS)) {
+					previous(index);
+				}
 			}
 
-			if (action.equals(ACTION_PAUSE)) {
-				pauseMusic(index);
-			}
-			if (action.equals(ACTION_TOGGLE_PLAYBACK)) {
-				toggle(index);
-			}
-
-			if (action.equals(ACTION_PLAY)) {
-				mMediaPlayer.reset();
-				setUpAsForeground(mArray.get(index).getTitle());
-				playMusic(mArray.get(index).getLinkPlay320());
-				lockscreen(index);
-				updateProgressBar();
-				PlayActivity.index = index;
-
-			} else if (action.equals(ACTION_NEXT)) {
-				mMediaPlayer.reset();
-				if (index >= mArray.size() - 1)
-					index = -1;
-				playNextSong(mArray.get(index + 1).getLinkPlay320(), index + 1);
-			} else if (action.equals(ACTION_PREVIOUS)) {
-				previous(index);
-
-			}
 		} catch (Exception e) {
-			Toast.makeText(getApplicationContext(), "onStartCommand 1", 0)
+			Toast.makeText(getApplicationContext(), "Kết nối gặp sự cố", 0)
 					.show();
+
+			PlayActivity.fragPlay.stopAnimation(PlayActivity.fragPlay.image);
 		}
 
 		return START_NOT_STICKY;// không cho service khởi động lại khi bị kill
@@ -153,8 +158,8 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 		mMediaPlayer.setOnSeekCompleteListener(this);
 		mMediaPlayer.setOnCompletionListener(this);
 		mMediaPlayer.setOnPreparedListener(this);
-		mMediaButtonReceiverComponent = new ComponentName(this,
-				MusicIntentReceiver.class);
+		// mMediaButtonReceiverComponent = new ComponentName(this,
+		// MusicIntentReceiver.class);
 		mAudioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 		mWifiLock = ((WifiManager) getSystemService(Context.WIFI_SERVICE))
 				.createWifiLock(WifiManager.WIFI_MODE_FULL, "mylock");
@@ -166,18 +171,23 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 	public void previous(int index) {
 		mMediaPlayer.reset();
 		if (index == 0) {
+			index = mArray.size();
 			try {
-				Log.d("index", "" + index);
-				index = mArray.size();
-				playMusic(mArray.get(index - 1).getLinkPlay320());
-				updateProgressBar();
-				setUpAsForeground(mArray.get(index - 1).getTitle());
-				PlayActivity.index = index - 1;
-				lockscreen(index);
+				PlayActivity.fragPlay.setSong(mArray.get(index - 1));
 			} catch (Exception e) {
-				Log.d("index", "" + index);
+
 			}
+			playMusic(mArray.get(index - 1).getLinkPlay320());
+			updateProgressBar();
+			setUpAsForeground(mArray.get(index - 1).getTitle());
+			PlayActivity.index = index - 1;
+			lockscreen(index - 1);
 		} else {
+			try {
+				PlayActivity.fragPlay.setSong(mArray.get(index - 1));
+			} catch (Exception e) {
+
+			}
 			playMusic(mArray.get(index - 1).getLinkPlay320());
 			updateProgressBar();
 			PlayActivity.index = index - 1;
@@ -268,15 +278,19 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 
 	public void playNextSong(String data, int index) {
 		try {
-			if (index > mArray.size() - 1) {
-				index = 0;
-			}
+			// if (index > mArray.size() - 1) {
+			// index = -1;
+			// }
 			playMusic(data);
-			PlayActivity.fragPlay.setSong(mArray.get(index));
+			try {
+				PlayActivity.fragPlay.setSong(mArray.get(index + 1));
+			} catch (Exception e) {
+
+			}
 			updateProgressBar();
-			setUpAsForeground(mArray.get(index).getTitle());
-			PlayActivity.index = index;
-			lockscreen(index);
+			setUpAsForeground(mArray.get(index + 1).getTitle());
+			PlayActivity.index = index + 1;
+			lockscreen(index + 1);
 		} catch (Exception e) {
 			Toast.makeText(getApplicationContext(), "Play next song ", 0)
 					.show();
@@ -286,19 +300,23 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 
 	@Override
 	public void onCompletion(MediaPlayer mp) {
-		try {
+		ConnectivityManager manager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+		// For 3G check
+		boolean is3g = manager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE)
+				.isConnectedOrConnecting();
+		// For WiFi Check
+		boolean isWifi = manager.getNetworkInfo(ConnectivityManager.TYPE_WIFI)
+				.isConnectedOrConnecting();
+		wifiManager = (WifiManager) getApplicationContext().getSystemService(
+				Context.WIFI_SERVICE);
+		if (!is3g && !isWifi) {
+			Toast.makeText(getApplicationContext(),
+					"Kiểm tra lại wifi hoặc 3G ", 0).show();
+			PlayActivity.fragPlay.stopAnimation(PlayActivity.fragPlay.image);
+		} else {
 			mMediaPlayer.reset();
 			int index = PlayActivity.index + 1;
 			playNextSong(mArray.get(index).getLinkPlay320(), index);
-			// if (index > mArray.size() - 1)
-			// index = 0;
-			// playMusic(mArray.get(index).getLinkPlay320());
-			// updateProgressBar();
-			// PlayActivity.fragPlay.setSong(mArray.get(index));
-			// lockscreen(index);
-			// PlayActivity.index = index;
-		} catch (Exception e) {
-			Toast.makeText(getApplicationContext(), "Completion 1", 0).show();
 		}
 	}
 
@@ -382,27 +400,26 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 
 	}
 
-	//
-	// void updateNotification(String text) {
-	// PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
-	// 0,
-	// new Intent(getApplicationContext(), ListChartActivity.class),
-	// PendingIntent.FLAG_UPDATE_CURRENT);
-	// mNotification.setLatestEventInfo(getApplicationContext(),
-	// "Bạn Đang Nghe Bài Hát", text, pi);
-	// mNotificationManager.notify(NOTIFICATION_ID, mNotification);
-	// }
-
 	void setUpAsForeground(String text) {
-		PendingIntent pi = PendingIntent.getActivity(getApplicationContext(),
-				0, new Intent(getApplicationContext(), MainActivity.class),
+		Intent previous = new Intent(MyService.NOTIFICATION_PREVIOUS);
+		Intent next = new Intent(MyService.NOTIFICATION_NEXT);
+		Intent stop = new Intent(MyService.NOTIFICATION_PAUSE);
+		Intent dimiss = new Intent(MyService.NOTIFICATION_DIMISS);
+		PendingIntent piPrevious = PendingIntent.getBroadcast(this, 0,
+				previous, PendingIntent.FLAG_UPDATE_CURRENT);
+		PendingIntent piNext = PendingIntent.getBroadcast(this, 0, next,
 				PendingIntent.FLAG_UPDATE_CURRENT);
-		mNotification = new Notification();
-		mNotification.tickerText = text;
-		mNotification.icon = R.drawable.music;
-		mNotification.flags |= Notification.FLAG_ONGOING_EVENT;
-		mNotification.setLatestEventInfo(getApplicationContext(),
-				"Bạn Đang Nghe Bài Hát", text, pi);
+		PendingIntent piStop = PendingIntent.getBroadcast(this, 0, stop,
+				PendingIntent.FLAG_UPDATE_CURRENT);
+		dimiss.putExtra("notificationid", NOTIFICATION_ID);
+		mNotification = new Notification.Builder(this)
+				// Show controls on lock screen even when user hides sensitive
+				// content.
+				.setSmallIcon(R.drawable.music)
+				.setContentTitle("Bạn đang nghe bài hát").setContentText(text)
+				.addAction(R.drawable.previous, "", piPrevious)
+				.addAction(R.drawable.next, "", piNext)
+				.addAction(R.drawable.stop, "", piStop).build();
 		startForeground(NOTIFICATION_ID, mNotification);
 	}
 
@@ -430,6 +447,7 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 			if (bitmap == null) {
 				bitmap = mDummyAlbumArt;
 			}
+			mNotification.largeIcon = bitmap;
 			mRemoteControlClientCompat
 					.editMetadata(true)
 					.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST,
@@ -439,27 +457,26 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 					.putString(MediaMetadataRetriever.METADATA_KEY_TITLE,
 							mArray.get(index).getTitle())
 					.putBitmap(
-							RemoteControlClientCompat.MetadataEditorCompat.METADATA_KEY_ARTWORK,
+							RemoteControlClient.MetadataEditor.BITMAP_KEY_ARTWORK,
 							bitmap).apply();
 		}
+
 	}
 
 	public void lockscreen(int index) {
-		MediaButtonHelper.registerMediaButtonEventReceiverCompat(mAudioManager,
-				mMediaButtonReceiverComponent);
-		// Use the remote control APIs (if available) to set the playback
-		// state
+
+		remoteComponentName = new ComponentName(getApplicationContext(),
+				new MusicIntentReceiver().ComponentName());
 		if (mRemoteControlClientCompat == null) {
 			Intent intent = new Intent(Intent.ACTION_MEDIA_BUTTON);
-			intent.setComponent(mMediaButtonReceiverComponent);
-			mRemoteControlClientCompat = new RemoteControlClientCompat(
-					PendingIntent.getBroadcast(this /* context */, 0 /*
-																	 * requestCode
-																	 * , ignored
-																	 */,
-							intent /* intent */, 0 /* flags */));
-			RemoteControlHelper.registerRemoteControlClient(mAudioManager,
-					mRemoteControlClientCompat);
+			intent.setComponent(remoteComponentName);
+			PendingIntent mediaPendingIntent = PendingIntent.getBroadcast(this,
+					0, intent, 0);
+			mAudioManager.registerMediaButtonEventReceiver(remoteComponentName);
+			mRemoteControlClientCompat = new RemoteControlClient(
+					mediaPendingIntent);
+			mAudioManager
+					.registerRemoteControlClient(mRemoteControlClientCompat);
 		}
 		mRemoteControlClientCompat
 				.setPlaybackState(RemoteControlClient.PLAYSTATE_PLAYING);
@@ -513,8 +530,8 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 			// release media player
 			if (mMediaPlayer.isPlaying())
 				mMediaPlayer.stop();
-			mMediaPlayer.release();
-			mMediaPlayer = null;
+			// mMediaPlayer.release();
+			// mMediaPlayer = null;
 			break;
 
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:

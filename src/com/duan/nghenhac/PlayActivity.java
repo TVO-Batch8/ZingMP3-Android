@@ -128,24 +128,23 @@ public class PlayActivity extends FragmentActivity implements OnClickListener {
 		intent.putExtra("index", index);
 		ConnectivityManager manager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
 
-		//For 3G check
+		// For 3G check
 		boolean is3g = manager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE)
-		            .isConnectedOrConnecting();
-		//For WiFi Check
+				.isConnectedOrConnecting();
+		// For WiFi Check
 		boolean isWifi = manager.getNetworkInfo(ConnectivityManager.TYPE_WIFI)
-		            .isConnectedOrConnecting();
+				.isConnectedOrConnecting();
 		wifiManager = (WifiManager) getApplicationContext().getSystemService(
 				Context.WIFI_SERVICE);
-//		if (!wifiManager.isWifiEnabled()) {
-//			Toast.makeText(getApplicationContext(),
-//					"Không thể kết nối tới máy chủ 2", 0).show();
-//		} 
-		if (!is3g && !isWifi) 
-		{ 
-			Toast.makeText(getApplicationContext(),
-					"Không thể kết nối tới máy chủ 5", 0).show();
-		}
-		else {
+		// if (!wifiManager.isWifiEnabled()) {
+		// Toast.makeText(getApplicationContext(),
+		// "Không thể kết nối tới máy chủ 2", 0).show();
+		// }
+		if (!is3g && !isWifi) {
+			Toast.makeText(getApplicationContext(), "Kiểm tra wifi hoặc 3g", 0)
+					.show();
+			fragPlay.stopAnimation(fragPlay.image);
+		} else {
 			switch (v.getId()) {
 			case R.id.imgPlay:
 				intent.setAction(MyService.ACTION_PLAY);

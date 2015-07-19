@@ -112,12 +112,6 @@ public class DetailActivity extends Activity {
 						String avatarArtist = avatar.getString("ArtistAvatar");
 						String avatarArtistB = avatarArtist.replace("94_94",
 								"165_165");
-						// HashMap<String, String> hashmap = new HashMap<String,
-						// String>();
-						// hashmap.put("Title", title);
-						// hashmap.put("Artist", artist);
-						// hashmap.put("ArtistAvatar", avatarArtist);
-						// hashmap.put("LinkPlay320", linkPlay320);
 						song.setArtist(artist);
 						song.setAvatarArtist(avatarArtistB);
 						song.setLinkPlay320(linkPlay320);
@@ -125,8 +119,6 @@ public class DetailActivity extends Activity {
 						song.setId(id);
 						Log.d("AvatarArtistB", "" + avatarArtistB);
 						myArray.add(song);
-
-						// menuitems.add(hashmap);
 					} catch (Exception e) {
 
 					}

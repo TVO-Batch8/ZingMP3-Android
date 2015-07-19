@@ -15,8 +15,10 @@
  */
 
 package com.duan.broadcast;
+
 import com.duan.nghenhac.MyService;
 
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -64,6 +66,20 @@ public class MusicIntentReceiver extends BroadcastReceiver {
 				context.startService(new Intent(MyService.ACTION_PREVIOUS));
 				break;
 			}
+		} else {
+			if (intent.getAction().equals(MyService.NOTIFICATION_NEXT)) {
+				context.startService(new Intent(MyService.ACTION_NEXT));
+			} else if (intent.getAction().equals(
+					MyService.NOTIFICATION_PREVIOUS)) {
+				context.startService(new Intent(MyService.ACTION_PREVIOUS));
+
+			} else if (intent.getAction().equals(MyService.NOTIFICATION_PAUSE)) {
+				context.startService(new Intent(MyService.ACTION_PAUSE));
+			}						
 		}
+		
 	}
+	 public String ComponentName() {
+         return this.getClass().getName();
+   }
 }
