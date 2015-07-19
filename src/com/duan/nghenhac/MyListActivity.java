@@ -31,7 +31,7 @@ public class MyListActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_my_list);
-	
+
 		myListView = (ListView) findViewById(R.id.mylist);
 		try {
 			mDB = new Database(MyListActivity.this);
@@ -60,6 +60,7 @@ public class MyListActivity extends Activity {
 			});
 		}
 		registerForContextMenu(myListView);
+		overridePendingTransition(R.anim.in, R.anim.out);
 
 	}
 

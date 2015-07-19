@@ -315,8 +315,13 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 			PlayActivity.fragPlay.stopAnimation(PlayActivity.fragPlay.image);
 		} else {
 			mMediaPlayer.reset();
-			int index = PlayActivity.index + 1;
-			playNextSong(mArray.get(index).getLinkPlay320(), index);
+			int index = PlayActivity.index+1;
+			if (index > mArray.size() - 1) {
+				index = -1;
+				playNextSong(mArray.get(index+1).getLinkPlay320(), -1);
+			} else {
+				playNextSong(mArray.get(index).getLinkPlay320(), index-1);
+			}
 		}
 	}
 
@@ -447,7 +452,7 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 			if (bitmap == null) {
 				bitmap = mDummyAlbumArt;
 			}
-			mNotification.largeIcon = bitmap;
+
 			mRemoteControlClientCompat
 					.editMetadata(true)
 					.putString(MediaMetadataRetriever.METADATA_KEY_ARTIST,
