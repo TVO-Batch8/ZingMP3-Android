@@ -1,0 +1,80 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/LinearLayout1"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+
+    android:weightSum="3"
+    tools:context="com.duan.nghenhac.ListChartActivity" >
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1" >
+
+        <ImageView
+             android:id="@+id/imageVN"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            android:src="@drawable/vn" />
+
+        <TextView
+            android:id="@+id/tvVN"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/imgButtonVN"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="#66CCFF"
+            android:textSize="30sp" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1" >
+
+        <ImageView
+            android:id="@+id/imageHQ"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            android:src="@drawable/hq" />
+
+        <TextView
+            android:id="@+id/tvHQ"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/imgButtonHQ"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="#66CCFF"
+            android:textSize="30sp" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1" >
+
+        <ImageView
+            android:id="@+id/imageAM"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitXY"
+            android:src="@drawable/am" />
+
+        <TextView
+            android:id="@+id/tvAM"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/imgButtonAM"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="#66CCFF"
+            android:textSize="30sp" />
+    </FrameLayout>
+
+</LinearLayout>

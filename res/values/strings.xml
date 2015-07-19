@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Nghenhac</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_detail">DetailActivity</string>
+    <string name="title_activity_play">Chơi Nhạc</string>
+    <string name="title_activity_video">VideoActivity</string>
+    <string name="title_activity_play_video">PlayVideoActivity</string>
+    <string name="title_song">Bài Hát</string>
+    <string name="title_activity_list_chart">Danh Sách BXH</string>
+    <string name="imgButtonVN">Việt Nam</string>
+    <string name="imgButtonHQ">Hàn Quốc</string>
+    <string name="imgButtonAM">Âu Mỹ</string>
+    <string name="btLike">Yêu Thích</string>
+    <string name="title_activity_hai_main">HAiMainActivity</string>
+    <string name="title_activity_my_list">Danh Sách Của Tôi</string>
+	<string name="tvSinger">Trình bày : </string>
+</resources>
