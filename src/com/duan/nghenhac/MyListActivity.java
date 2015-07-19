@@ -55,12 +55,13 @@ public class MyListActivity extends Activity {
 					intent.putExtra("Array", mArray);
 					intent.putExtra("index", position);
 					startActivity(intent);
+					overridePendingTransition(R.anim.in, R.anim.out);
 
 				}
 			});
 		}
 		registerForContextMenu(myListView);
-		overridePendingTransition(R.anim.in, R.anim.out);
+		
 
 	}
 
