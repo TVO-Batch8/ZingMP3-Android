@@ -136,7 +136,7 @@ public class DetailActivity extends Activity {
 		@Override
 		protected void onProgressUpdate(Void... values) {
 			super.onProgressUpdate(values);
-			Toast.makeText(DetailActivity.this, "Kiểm tra lại Wifi",
+			Toast.makeText(DetailActivity.this, "Kết nối sever thất bại ",
 					Toast.LENGTH_SHORT).show();
 			myProgress.dismiss();
 		}
