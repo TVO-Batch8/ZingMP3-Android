@@ -149,12 +149,8 @@ public class PlayActivity extends FragmentActivity implements OnClickListener {
 			case R.id.imgPlay:
 				intent.setAction(MyService.ACTION_PLAY);
 				startService(intent);
-				fragPlay.setSong(mArraySong.get(index));
 				break;
 			case R.id.imgJumpNext:
-				if (index >= mArraySong.size() - 1)
-					index = -1;
-				fragPlay.setSong(mArraySong.get(index + 1));
 				intent.setAction(MyService.ACTION_NEXT);
 				startService(intent);
 
@@ -166,11 +162,6 @@ public class PlayActivity extends FragmentActivity implements OnClickListener {
 			case R.id.imgJumpBack:
 				intent.setAction(MyService.ACTION_PREVIOUS);
 				startService(intent);
-				if (index == 0) {
-					index = mArraySong.size();
-					fragPlay.setSong(mArraySong.get(index - 1));
-				}
-				fragPlay.setSong(mArraySong.get(index - 1));
 				break;
 			default:
 				break;

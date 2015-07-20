@@ -23,7 +23,6 @@ import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
-import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.media.RemoteControlClient;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
@@ -41,10 +40,10 @@ import android.widget.Toast;
 import com.duan.Model.Song;
 import com.duan.broadcast.MusicIntentReceiver;
 
+//OnSeekBarChangeListener,OnSeekCompleteListener, , OnPreparedListener
 @SuppressLint("NewApi")
 public class MyService extends Service implements OnSeekBarChangeListener,
-		OnSeekCompleteListener, OnCompletionListener, OnPreparedListener,
-		OnAudioFocusChangeListener {
+		OnCompletionListener, OnAudioFocusChangeListener {
 	public static final String ACTION_PLAY = "duan.son.action.PLAY";
 	public static final String ACTION_PAUSE = "duan.son.action.PAUSE";
 	public static final String ACTION_NEXT = "duan.son.action.NEXT";
@@ -61,8 +60,8 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 	// Xử lý việc cập nhật giao diện (thời gian và progress bar ...)
 	private Handler mHandler = new Handler();
 	private Utilities utils;
-	public static int currentSongIndex = -1;
-	public static int songindexForPause = 0;
+//	public static int currentSongIndex = -1;
+//	public static int songindexForPause = 0;
 	ArrayList<Song> mArray = new ArrayList<Song>();
 	//
 	private WeakReference<SeekBar> songProgressBar;
@@ -77,7 +76,7 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 	private RemoteControlClient mRemoteControlClientCompat;
 	private ComponentName remoteComponentName;
 	private WifiLock mWifiLock;
-	private Bitmap mDummyAlbumArt;
+	private Bitmap micon;
 	private WifiManager wifiManager;
 	private Bitmap mybitmap;
 
@@ -93,8 +92,6 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 			// For WiFi Check
 			boolean isWifi = manager.getNetworkInfo(
 					ConnectivityManager.TYPE_WIFI).isConnectedOrConnecting();
-			wifiManager = (WifiManager) getApplicationContext()
-					.getSystemService(Context.WIFI_SERVICE);
 			if (!is3g && !isWifi) {
 				Toast.makeText(getApplicationContext(),
 						"Kiểm tra lại wifi hoặc 3G ", 0).show();
@@ -119,6 +116,11 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 
 				if (action.equals(ACTION_PLAY)) {
 					mMediaPlayer.reset();
+					try {
+						PlayActivity.fragPlay.setSong(mArray.get(index));
+					} catch (Exception e) {
+
+					}
 					setUpAsForeground(mArray.get(index).getTitle());
 					playMusic(mArray.get(index).getLinkPlay320());
 					lockscreen(index);
@@ -155,16 +157,12 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 		mMediaPlayer = new MediaPlayer();
 		mMediaPlayer.reset();
 		mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-		mMediaPlayer.setOnSeekCompleteListener(this);
 		mMediaPlayer.setOnCompletionListener(this);
-		mMediaPlayer.setOnPreparedListener(this);
-		// mMediaButtonReceiverComponent = new ComponentName(this,
-		// MusicIntentReceiver.class);
 		mAudioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 		mWifiLock = ((WifiManager) getSystemService(Context.WIFI_SERVICE))
 				.createWifiLock(WifiManager.WIFI_MODE_FULL, "mylock");
 		mWifiLock.acquire();
-		mDummyAlbumArt = BitmapFactory.decodeResource(getResources(),
+		micon = BitmapFactory.decodeResource(getResources(),
 				R.drawable.zing);
 	}
 
@@ -282,11 +280,7 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 			// index = -1;
 			// }
 			playMusic(data);
-			try {
-				PlayActivity.fragPlay.setSong(mArray.get(index + 1));
-			} catch (Exception e) {
-
-			}
+			PlayActivity.fragPlay.setSong(mArray.get(index + 1));
 			updateProgressBar();
 			setUpAsForeground(mArray.get(index + 1).getTitle());
 			PlayActivity.index = index + 1;
@@ -315,12 +309,12 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 			PlayActivity.fragPlay.stopAnimation(PlayActivity.fragPlay.image);
 		} else {
 			mMediaPlayer.reset();
-			int index = PlayActivity.index+1;
+			int index = PlayActivity.index + 1;
 			if (index > mArray.size() - 1) {
 				index = -1;
-				playNextSong(mArray.get(index+1).getLinkPlay320(), -1);
+				playNextSong(mArray.get(index + 1).getLinkPlay320(), -1);
 			} else {
-				playNextSong(mArray.get(index).getLinkPlay320(), index-1);
+				playNextSong(mArray.get(index).getLinkPlay320(), index - 1);
 			}
 		}
 	}
@@ -373,18 +367,6 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 			mHandler.postDelayed(this, 1000);
 		}
 	};
-
-	@Override
-	public void onSeekComplete(MediaPlayer mp) {
-	}
-
-	@Override
-	public void onProgressChanged(SeekBar seekBar, int progress,
-			boolean fromUser) {
-		// TODO Auto-generated method stub
-
-	}
-
 	@Override
 	public void onStartTrackingTouch(SeekBar seekBar) {
 
@@ -450,7 +432,7 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
 			if (bitmap == null) {
-				bitmap = mDummyAlbumArt;
+				bitmap = micon;
 			}
 
 			mRemoteControlClientCompat
@@ -516,11 +498,6 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 	}
 
 	@Override
-	public void onPrepared(MediaPlayer mp) {
-
-	}
-
-	@Override
 	public void onAudioFocusChange(int focusChange) {
 		switch (focusChange) {
 		case AudioManager.AUDIOFOCUS_GAIN:
@@ -547,14 +524,20 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 				mMediaPlayer.pause();
 			break;
 
-		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-			// Lost focus for a short time, but it's ok to keep playing
-			// at an attenuated level
-			if (mMediaPlayer.isPlaying())
-				mMediaPlayer.setVolume(0.1f, 0.1f);
-			break;
+//		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+//			// Lost focus for a short time, but it's ok to keep playing
+//			// at an attenuated level
+//			if (mMediaPlayer.isPlaying())
+//				mMediaPlayer.setVolume(0.1f, 0.1f);
+//			break;
 		}
 
 	}
 
+	@Override
+	public void onProgressChanged(SeekBar seekBar, int progress,
+			boolean fromUser) {
+		// TODO Auto-generated method stub
+
+	}
 }

@@ -25,8 +25,6 @@ import com.duan.nghenhac.R;
 public class Fragment_SongList extends Fragment {
 	ListView mListView;
 	ArrayList<Song> mArray = new ArrayList<Song>();
-	WifiManager wifiManager;
-
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -59,7 +57,6 @@ public class Fragment_SongList extends Fragment {
 					intent.setAction(MyService.ACTION_PLAY);
 					intent.putExtra("index", position);
 					getActivity().startService(intent);
-					PlayActivity.fragPlay.setSong(mArray.get(position));
 
 				}
 			});
