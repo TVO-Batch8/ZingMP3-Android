@@ -60,8 +60,8 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 	// Xử lý việc cập nhật giao diện (thời gian và progress bar ...)
 	private Handler mHandler = new Handler();
 	private Utilities utils;
-//	public static int currentSongIndex = -1;
-//	public static int songindexForPause = 0;
+	// public static int currentSongIndex = -1;
+	// public static int songindexForPause = 0;
 	ArrayList<Song> mArray = new ArrayList<Song>();
 	//
 	private WeakReference<SeekBar> songProgressBar;
@@ -162,8 +162,7 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 		mWifiLock = ((WifiManager) getSystemService(Context.WIFI_SERVICE))
 				.createWifiLock(WifiManager.WIFI_MODE_FULL, "mylock");
 		mWifiLock.acquire();
-		micon = BitmapFactory.decodeResource(getResources(),
-				R.drawable.zing);
+		micon = BitmapFactory.decodeResource(getResources(), R.drawable.zing);
 	}
 
 	public void previous(int index) {
@@ -206,7 +205,12 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 			}
 		} else {
 			mMediaPlayer.start();
-			PlayActivity.fragPlay.startAnimation(PlayActivity.fragPlay.image);
+			try {
+				PlayActivity.fragPlay
+						.startAnimation(PlayActivity.fragPlay.image);
+			} catch (Exception e) {
+
+			}
 			setUpAsForeground(mArray.get(index).getTitle());
 			if (mRemoteControlClientCompat != null) {
 				mRemoteControlClientCompat
@@ -280,7 +284,11 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 			// index = -1;
 			// }
 			playMusic(data);
-			PlayActivity.fragPlay.setSong(mArray.get(index + 1));
+			try {
+				PlayActivity.fragPlay.setSong(mArray.get(index + 1));
+			} catch (Exception e) {
+
+			}
 			updateProgressBar();
 			setUpAsForeground(mArray.get(index + 1).getTitle());
 			PlayActivity.index = index + 1;
@@ -367,6 +375,7 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 			mHandler.postDelayed(this, 1000);
 		}
 	};
+
 	@Override
 	public void onStartTrackingTouch(SeekBar seekBar) {
 
@@ -509,7 +518,6 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 
 		case AudioManager.AUDIOFOCUS_LOSS:
 			// Lost focus for an unbounded amount of time: stop playback and
-			// release media player
 			if (mMediaPlayer.isPlaying())
 				mMediaPlayer.stop();
 			// mMediaPlayer.release();
@@ -524,12 +532,12 @@ public class MyService extends Service implements OnSeekBarChangeListener,
 				mMediaPlayer.pause();
 			break;
 
-//		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-//			// Lost focus for a short time, but it's ok to keep playing
-//			// at an attenuated level
-//			if (mMediaPlayer.isPlaying())
-//				mMediaPlayer.setVolume(0.1f, 0.1f);
-//			break;
+		// case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+		// // Lost focus for a short time, but it's ok to keep playing
+		// // at an attenuated level
+		// if (mMediaPlayer.isPlaying())
+		// mMediaPlayer.setVolume(0.1f, 0.1f);
+		// break;
 		}
 
 	}

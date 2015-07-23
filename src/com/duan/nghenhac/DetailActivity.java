@@ -46,7 +46,8 @@ public class DetailActivity extends Activity {
 	public static String ZING_MP3_API_PUBLIC_KEY = "4c3d549977f7943bd9cc6d33f656bb5c1c87d2c0";
 
 	String x;
-	ArrayList<HashMap<String, String>> menuitems = new ArrayList<HashMap<String, String>>();
+	// ArrayList<HashMap<String, String>> menuitems = new
+	// ArrayList<HashMap<String, String>>();
 	TextView tv;
 	ListView lv;
 	ArrayList<Song> myArray = new ArrayList<Song>();
@@ -81,10 +82,11 @@ public class DetailActivity extends Activity {
 			try {
 				InputStream is;
 				String stringurl = x;
-				Log.d("abc", stringurl);
+				Log.d("json", stringurl);
 				jsonURL = new URL(stringurl);
 				jc = jsonURL.openConnection();
 				is = jc.getInputStream();
+
 				// doc du lieu
 				BufferedReader reader = new BufferedReader(
 						new InputStreamReader(is, "utf-8"), 8);
@@ -92,38 +94,39 @@ public class DetailActivity extends Activity {
 				String line = null;
 				while ((line = reader.readLine()) != null) {
 					sb.append(line + "\n");
+					Log.d("line", sb.toString());
 				}
 				is.close();
 				String jsonTxt = sb.toString(); // doc StringBuilder vao chuoi
 				Log.d("Chitiet", jsonTxt);
 				JSONArray items = new JSONArray(jsonTxt);
 				for (int i = 0; i < items.length(); i++) {
-					try {
-						Song song = new Song();
+					// try {
+					Song song = new Song();
 
-						JSONObject item = items.getJSONObject(i);
-						String title = item.getString("Title");
-						String artist = item.getString("Artist");
-						String linkPlay320 = item.getString("LinkPlay320");
-						String id = item.getString("ID");
-						JSONArray artistDetail = item
-								.getJSONArray("ArtistDetail");
-						JSONObject avatar = artistDetail.getJSONObject(0);
-						String avatarArtist = avatar.getString("ArtistAvatar");
-						String avatarArtistB = avatarArtist.replace("94_94",
-								"165_165");
-						song.setArtist(artist);
-						song.setAvatarArtist(avatarArtistB);
-						song.setLinkPlay320(linkPlay320);
-						song.setTitle(title);
-						song.setId(id);
-						Log.d("AvatarArtistB", "" + avatarArtistB);
-						myArray.add(song);
-					} catch (Exception e) {
-
-					}
-				}// end for
-				Log.d("soluong", menuitems.size() + "");
+					JSONObject item = items.getJSONObject(i);
+					String title = item.getString("Title");
+					String artist = item.getString("Artist");
+					String linkPlay320 = item.getString("LinkPlay320");
+					String id = item.getString("ID");
+					JSONArray artistDetail = item.getJSONArray("ArtistDetail");
+					JSONObject avatar = artistDetail.getJSONObject(0);
+					String avatarArtist = avatar.getString("ArtistAvatar");
+					String avatarArtistB = avatarArtist.replace("94_94",
+							"165_165");
+					song.setArtist(artist);
+					song.setAvatarArtist(avatarArtistB);
+					song.setLinkPlay320(linkPlay320);
+					song.setTitle(title);
+					song.setId(id);
+					Log.d("AvatarArtistB", "" + avatarArtistB);
+					myArray.add(song);
+				}
+				// } catch (Exception e) {
+				//
+				// }
+				// }// end for
+				// Log.d("soluong", menuitems.size() + "");
 			} catch (Exception e) {
 				e.printStackTrace();
 				Log.d("loi", e.toString());
@@ -190,9 +193,10 @@ public class DetailActivity extends Activity {
 			e.printStackTrace();
 		} catch (GeneralSecurityException e) {
 			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
+		// // } catch (Exception e) {
+		// // e.printStackTrace();
+		// // }
 		return URL_STRING + data + "&publicKey=" + ZING_MP3_API_PUBLIC_KEY
 				+ "&signature=" + signature;
 	}
